@@ -14,6 +14,7 @@ def main():
     bot = commands.Bot(command_prefix='!') #, intents=intents)
 
     bot.load_extension('commands.general')
+    bot.load_extension('commands.music')
     bot.run(DISCORD_TOKEN)
 
 if __name__ == '__main__':

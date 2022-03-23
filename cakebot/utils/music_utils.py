@@ -53,7 +53,7 @@ class MusicPlayer:
         """Music Player that control the audio state"""
         self.song_queue = SongQueue()
         self.current_song = None
-        seld.state = State.IDLE
+        self.state = State.IDLE
     
     def add(self, song_url: str) -> None:
         """Adds song to queue and updates state"""

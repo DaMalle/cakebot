@@ -3,3 +3,4 @@ discordbot
 .env
 *.py[cod]
 __pycache__/
+cakebot.egg-info

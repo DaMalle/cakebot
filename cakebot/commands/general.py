@@ -6,7 +6,7 @@ class General(commands.Cog):
         self.bot = bot
 
     @commands.command(name='join')
-    async def _join(self, ctx: commands.Context) -> None:
+    async def join(self, ctx: commands.Context) -> None:
         """Joins the authors voice channel."""
 
         author = ctx.author.voice
