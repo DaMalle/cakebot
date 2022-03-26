@@ -2,7 +2,6 @@ aiohttp==3.7.4.post0
 async-timeout==3.0.1
 attrs==21.4.0
 Brotli==1.0.9
--e git+https://github.com/DaMalle/cakebot.git@eb3cecec1af3829b297f409846adf1abad9bc9f2#egg=cakebot
 cffi==1.15.0
 chardet==4.0.0
 idna==3.3
