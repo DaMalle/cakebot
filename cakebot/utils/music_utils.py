@@ -2,7 +2,6 @@ from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 from discord import FFmpegPCMAudio, PCMVolumeTransformer
 
-
 class SongNode:
     def __init__(self, data) -> None:
         """Nodes used in linked lists"""

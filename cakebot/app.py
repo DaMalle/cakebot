@@ -1,10 +1,13 @@
 import discord
 from discord.ext import commands
 
+import logging
 import os
 from dotenv import load_dotenv
 
-def main() -> None:
+
+def main() -> None: 
+    logging.basicConfig(level=logging.INFO)
     load_dotenv() # Get access to .env
     DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
     
@@ -12,6 +15,7 @@ def main() -> None:
     
     extensions = ['commands.general', 'commands.music']
     for extension in extensions: bot.load_extension(extension)
+
     bot.run(DISCORD_TOKEN)
 
 if __name__ == '__main__':

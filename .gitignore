@@ -1,5 +1,5 @@
 makefile
-discordbot
+bot-env
 .env
 *.py[cod]
 __pycache__/
