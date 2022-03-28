@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+
 class General(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -23,10 +24,13 @@ class General(commands.Cog):
 
     @commands.command(name="leave")
     async def _leave(self, ctx: commands.Context) -> None:
+        """Leaves voicechannel if possible"""
+
         try:
             await ctx.voice_client.disconnect()
         except:
             await ctx.send(content="I'm not connected :cake:")
+
 
 def setup(bot) -> None:
     bot.add_cog(General(bot))
