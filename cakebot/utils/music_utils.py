@@ -94,7 +94,7 @@ class MusicPlayer:
             voice_client.play(source,
                               after=lambda x: self.play_next(voice_client))
             
-        except DownloadError:
+        except DownloadError: # todo: fix try/except block. Maybe add final and remove play_next()?
             self.song_queue.remove()
             
 
