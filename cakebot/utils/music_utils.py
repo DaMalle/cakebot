@@ -11,7 +11,7 @@ class SongNode:
         self.next = None
 
     def __repr__(self) -> str:
-        return self.data
+        return self.song
 
 
 class SongQueue:
@@ -24,7 +24,7 @@ class SongQueue:
         """Gets first song in queue"""
 
         if self.head:
-            return self.head.data
+            return self.head.song
 
     def add(self, node: SongNode) -> None:
         """Adds a song to the end of the queue"""
@@ -52,7 +52,7 @@ class SongQueue:
         nodes = []
 
         while node:
-            nodes.append(node.data)
+            nodes.append(node.song)
             node = node.next
 
         return " -> ".join(nodes)
@@ -81,8 +81,8 @@ class MusicPlayer:
 
         self.song_queue.remove()
 
-    def play(self, voice_client: ctx.voice_client) -> None:
-        """Plays first song from song_url through voice_client"""
+    def play(self, voice_client) -> None:
+        """Plays songs from queue through voice_client"""
         
         try:
             downloader = YoutubeDL({"format": "bestaudio"})
@@ -94,13 +94,15 @@ class MusicPlayer:
             voice_client.play(source,
                               after=lambda x: self.play_next(voice_client))
             
-        except DownloadError: # todo: fix try/except block. Maybe add final and remove play_next()?
+        except DownloadError as e: 
             self.song_queue.remove()
-            
 
-    def play_next(self, voice_client: ctx.voice_client) -> None:
+    def play_next(self, voice_client):
         """Removes first song and plays next song in queue"""
 
         self.song_queue.remove()
         if self.song_queue.head:
             self.play(voice_client)
+
+    def clear_queue(self):
+        self.song_queue = SongQueue()
