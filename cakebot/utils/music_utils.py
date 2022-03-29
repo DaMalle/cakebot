@@ -64,7 +64,7 @@ class MusicPlayer:
 
         self.song_queue = SongQueue()
 
-        self.ffmpeg_options = {
+        self.FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 \
                                -reconnect_streamed 1 \
                                -reconnect_delay_max 5', 
@@ -90,11 +90,11 @@ class MusicPlayer:
                                            download=False)
             stream_url = song_info.get("url")
             source = PCMVolumeTransformer(FFmpegPCMAudio(stream_url,
-                                          **self.ffmpeg_options), 1)
+                                          **self.FFMPEG_OPTIONS), 1)
             voice_client.play(source,
                               after=lambda x: self.play_next(voice_client))
             
-        except DownloadError as e:
+        except DownloadError:
             self.song_queue.remove()
             
 
