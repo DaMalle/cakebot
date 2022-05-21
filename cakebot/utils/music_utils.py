@@ -2,6 +2,8 @@ from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 from discord import FFmpegPCMAudio, PCMVolumeTransformer
 
+from cakebot.utils.general_utils import BotState
+
 
 class SongNode:
     def __init__(self, song: str) -> None:
@@ -35,8 +37,8 @@ class SongQueue:
         else:
             self.head = self.tail = node
 
-    def remove(self) -> None:
-        """Removes first item from the queue"""
+    def remove_first_song(self) -> None:
+        """Removes first song from the queue"""
 
         if self.head:
             self.head = self.head.next
@@ -70,6 +72,14 @@ class MusicPlayer:
                                -reconnect_delay_max 5', 
             'options': '-vn'
         }
+
+    def get_song_source(self, source_link) -> any:
+        """Returns source enum based on patternmatching source-input"""
+        pass
+
+    def get_yt_link(self, source_link) -> str:
+        """Returns yt link for song as a string"""
+        pass
     
     def add(self, song_url: str) -> None:
         """Adds song to queue and updates state"""
@@ -85,22 +95,25 @@ class MusicPlayer:
         """Plays songs from queue through voice_client"""
         
         try:
-            downloader = YoutubeDL({"format": "bestaudio"})
-            song_info = downloader.extract_info(self.song_queue.get_song(), 
-                                           download=False)
-            stream_url = song_info.get("url")
+            downloader = YoutubeDL({"format": "bestaudio", 'noplaylist':'True'})
+            #song_info = downloader.extract_info(self.song_queue.get_song(),
+            #                                    download=False)
+            query = f"ytsearch:{self.song_queue.get_song()}"
+            song_info = downloader.extract_info(query, download=False)
+            stream_url = song_info['entries'][0]["url"]
+            
             source = PCMVolumeTransformer(FFmpegPCMAudio(stream_url,
                                           **self.FFMPEG_OPTIONS), 1)
             voice_client.play(source,
                               after=lambda x: self.play_next(voice_client))
             
-        except DownloadError as e: 
-            self.song_queue.remove()
+        except DownloadError: 
+            self.song_queue.remove_first_song()
 
     def play_next(self, voice_client):
         """Removes first song and plays next song in queue"""
 
-        self.song_queue.remove()
+        self.song_queue.remove_first_song()
         if self.song_queue.head:
             self.play(voice_client)
 
