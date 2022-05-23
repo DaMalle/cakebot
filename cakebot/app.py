@@ -13,7 +13,7 @@ def main() -> None:
     load_dotenv() # Get access to .env
     DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
     
-    bot = commands.Bot(command_prefix='?')
+    bot = commands.Bot(command_prefix='!')
     
     extensions = ['commands.general', 'commands.music']
     for extension in extensions: bot.load_extension(extension)
