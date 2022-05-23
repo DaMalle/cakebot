@@ -1,2 +1,2 @@
-# cakebot
-a simple discord bot for music
+# Cakebot
+A simple discord bot for music
