@@ -20,7 +20,7 @@ class Music(commands.Cog):
     @commands.command(name='skip')
     async def _skip(self, ctx) -> None:
         ctx.voice_client.stop()
-        self.music_player.play_next(ctx.voice_client)
+        self.music_player.play_next()
 
     @commands.command(name='pause')
     async def _pause(self, ctx) -> None:
