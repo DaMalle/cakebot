@@ -14,13 +14,12 @@ class Music(commands.Cog):
 
         self.music_player.add(' '.join(song_request))
         if not ctx.voice_client.is_playing():
-            self.music_player.voice_client = ctx.voice_client
-            self.music_player.play()
+            self.music_player.play(ctx.voice_client)
 
     @commands.command(name='skip')
     async def _skip(self, ctx) -> None:
         ctx.voice_client.stop()
-        self.music_player.play_next()
+        self.music_player.play_next(ctx.voice_client)
 
     @commands.command(name='pause')
     async def _pause(self, ctx) -> None:

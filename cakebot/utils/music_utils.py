@@ -1,3 +1,4 @@
+from pickle import NONE
 import re
 
 from yt_dlp import YoutubeDL
@@ -64,7 +65,7 @@ class SongQueue:
 class MusicPlayer:
     def __init__(self) -> None:
         """Music Player that play songs from a queue (fifo)"""
-        self.voice_client = None
+
         self.song_queue = SongQueue()
 
         self.FFMPEG_OPTIONS = {
@@ -93,7 +94,7 @@ class MusicPlayer:
                 song_info = downloader.extract_info(song_query, download=False)
                 stream_url = song_info.get("url")
         else:
-            query = f"ytsearch:{self.song_queue.get_song()}"
+            query = f"ytsearch:{song_query}"
             song_info = downloader.extract_info(query, download=False)
             if song_info['entries']:
                 stream_url = song_info['entries'][0]['url']
@@ -106,8 +107,8 @@ class MusicPlayer:
         """Adds song to queue"""
 
         song_url = self.get_yt_stream_url(song_query)
-
-        if song_url:
+        
+        if song_url is not None:
             self.song_queue.add(SongNode(song_url))
 
     def remove(self) -> None:
@@ -115,20 +116,20 @@ class MusicPlayer:
 
         self.song_queue.remove_first_song()
 
-    def play(self) -> None:
+    def play(self, voice_client) -> None:
         """Plays songs from queue through voice_client"""
 
         source = PCMVolumeTransformer(FFmpegPCMAudio(self.song_queue.get_song(),
                                           **self.FFMPEG_OPTIONS), 1)
-        self.voice_client.play(source, after=self.play_next)
+        voice_client.play(source, after=lambda x: self.play_next(voice_client))
 
 
-    def play_next(self):
+    def play_next(self, voice_client):
         """Removes the first song and plays the next song in queue"""
 
         self.song_queue.remove_first_song()
         if self.song_queue.head:
-            self.play()
+            self.play(voice_client)
 
     def clear_queue(self):
         self.song_queue = SongQueue()
