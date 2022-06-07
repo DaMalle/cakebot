@@ -1,3 +1,5 @@
+import re
+
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 from discord import FFmpegPCMAudio, PCMVolumeTransformer
@@ -59,11 +61,10 @@ class SongQueue:
 
         return " -> ".join(nodes)
 
-
 class MusicPlayer:
     def __init__(self) -> None:
         """Music Player that play songs from a queue (fifo)"""
-
+        self.voice_client = None
         self.song_queue = SongQueue()
 
         self.FFMPEG_OPTIONS = {
@@ -73,49 +74,61 @@ class MusicPlayer:
             'options': '-vn'
         }
 
-    def get_song_source(self, source_link) -> any:
-        """Returns source enum based on patternmatching source-input"""
-        pass
+    def is_link(self, song_query: str) -> bool:
+        """Checks if self.song_query is a link or not"""
 
-    def get_yt_link(self, source_link) -> str:
-        """Returns yt link for song as a string"""
-        pass
+        regex = re.compile('http[s]?://(?:[a-zA-Z]|[0-9]\
+                            |[$-_@.&+]|[!*\(\),] \|(?:%\
+                            [0-9a-fA-F][0-9a-fA-F]))+')
+
+        return (re.match(regex, song_query) is not None)
     
-    def add(self, song_url: str) -> None:
-        """Adds song to queue and updates state"""
+    def get_yt_stream_url(self, song_query: str) -> str:
+        """Returns a streaming url for musicplayer"""
 
-        self.song_queue.add(SongNode(song_url))
+        downloader = YoutubeDL({'format': 'bestaudio', 'noplaylist':'True'})
+        
+        if self.is_link(song_query):
+            if "youtube.com/watch?v" in song_query:
+                song_info = downloader.extract_info(song_query, download=False)
+                stream_url = song_info.get("url")
+        else:
+            query = f"ytsearch:{self.song_queue.get_song()}"
+            song_info = downloader.extract_info(query, download=False)
+            if song_info['entries']:
+                stream_url = song_info['entries'][0]['url']
+            else:
+                stream_url = None
+
+        return stream_url
+
+    def add(self, song_query: str) -> None:
+        """Adds song to queue"""
+
+        song_url = self.get_yt_stream_url(song_query)
+
+        if song_url:
+            self.song_queue.add(SongNode(song_url))
 
     def remove(self) -> None:
         """Removes first song from queue"""
 
-        self.song_queue.remove()
+        self.song_queue.remove_first_song()
 
-    def play(self, voice_client) -> None:
+    def play(self) -> None:
         """Plays songs from queue through voice_client"""
-        
-        try:
-            downloader = YoutubeDL({"format": "bestaudio", 'noplaylist':'True'})
-            #song_info = downloader.extract_info(self.song_queue.get_song(),
-            #                                    download=False)
-            query = f"ytsearch:{self.song_queue.get_song()}"
-            song_info = downloader.extract_info(query, download=False)
-            stream_url = song_info['entries'][0]["url"]
-            
-            source = PCMVolumeTransformer(FFmpegPCMAudio(stream_url,
-                                          **self.FFMPEG_OPTIONS), 1)
-            voice_client.play(source,
-                              after=lambda x: self.play_next(voice_client))
-            
-        except DownloadError: 
-            self.song_queue.remove_first_song()
 
-    def play_next(self, voice_client):
-        """Removes first song and plays next song in queue"""
+        source = PCMVolumeTransformer(FFmpegPCMAudio(self.song_queue.get_song(),
+                                          **self.FFMPEG_OPTIONS), 1)
+        self.voice_client.play(source, after=self.play_next)
+
+
+    def play_next(self):
+        """Removes the first song and plays the next song in queue"""
 
         self.song_queue.remove_first_song()
         if self.song_queue.head:
-            self.play(voice_client)
+            self.play()
 
     def clear_queue(self):
         self.song_queue = SongQueue()

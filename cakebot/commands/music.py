@@ -14,7 +14,8 @@ class Music(commands.Cog):
 
         self.music_player.add(' '.join(song_request))
         if not ctx.voice_client.is_playing():
-            self.music_player.play(ctx.voice_client)
+            self.music_player.voice_client = ctx.voice_client
+            self.music_player.play()
 
     @commands.command(name='skip')
     async def _skip(self, ctx) -> None:
