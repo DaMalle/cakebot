@@ -1,9 +1,6 @@
-from enum import Enum, auto, unique
+from discord import Embed, Colour
 
-
-@unique
-class BotState(Enum):
-    """ State of discord bot. """
-    IDLE = auto()
-    PLAYING_MUSIC = auto()
-    PAUSED_MUSIC = auto()
+async def send_message(ctx, title: str, msg: str) -> None:
+    await ctx.send(embed=Embed(colour = Colour.red(), 
+                               title=title,
+                               description=msg))

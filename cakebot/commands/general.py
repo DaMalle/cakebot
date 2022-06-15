@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord.utils import get
+from cakebot.utils.general_utils import send_message
 
 
 @commands.command(name='join', aliases=['summon'])
@@ -17,7 +17,8 @@ async def join(ctx: commands.Context) -> None:
         else:
             await destination.connect()
     else:
-        await ctx.send(content="You are not in a chatroom :cake:")
+        msg="You are not in a chatroom :cake:"
+        await send_message(ctx, title="You Are Trash!", msg=msg)
 
 @commands.command(name='leave')
 async def leave(ctx: commands.Context) -> None:
@@ -30,8 +31,10 @@ async def leave(ctx: commands.Context) -> None:
 
 @commands.command(name='ping')
 async def ping(ctx: commands.Context) -> None:
-    msg = f"pong! Latency is {round(ctx.bot.latency * 1000)}ms :cake:"
-    await ctx.send(content=msg)
+    """Sends the latency of the discord bot"""
+
+    msg = f"Latency is {round(ctx.bot.latency * 1000)}ms :cake:"
+    await send_message(ctx, title="Pong!", msg=msg)
 
 def setup(bot) -> None:
     bot.add_command(join)

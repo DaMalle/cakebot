@@ -1,18 +1,24 @@
-from pickle import NONE
 import re
+import asyncio
+from dataclasses import dataclass
 
 from yt_dlp import YoutubeDL
-from yt_dlp.utils import DownloadError
 from discord import FFmpegPCMAudio, PCMVolumeTransformer
+from cakebot.utils.general_utils import send_message
 
-from cakebot.utils.general_utils import BotState
+
+@dataclass(init=True)
+class YoutubeSong:
+    name: str | None = None
+    stream_url: str | None = None
+    is_valid: bool = False
 
 
 class SongNode:
-    def __init__(self, song: str) -> None:
+    def __init__(self, song: YoutubeSong) -> None:
         """Nodes used in linked lists"""
 
-        self.song = song
+        self.song: YoutubeSong = song
         self.next = None
 
     def __repr__(self) -> str:
@@ -25,7 +31,7 @@ class SongQueue:
 
         self.head = self.tail = None
     
-    def get_song(self) -> str:
+    def get_song(self) -> YoutubeSong:
         """Gets first song in queue"""
 
         if self.head:
@@ -33,7 +39,7 @@ class SongQueue:
 
     def add(self, node: SongNode) -> None:
         """Adds a song to the end of the queue"""
-
+        
         if self.tail:
             self.tail.next = node
             self.tail = self.tail.next
@@ -57,7 +63,7 @@ class SongQueue:
         nodes = []
 
         while node:
-            nodes.append(node.song)
+            nodes.append(node.song.name)
             node = node.next
 
         return " -> ".join(nodes)
@@ -83,53 +89,76 @@ class MusicPlayer:
                             [0-9a-fA-F][0-9a-fA-F]))+')
 
         return (re.match(regex, song_query) is not None)
-    
-    def get_yt_stream_url(self, song_query: str) -> str:
-        """Returns a streaming url for musicplayer"""
 
+    def get_song_from_link(self, downloader, song_query) -> YoutubeSong:
+        """Returns YoutubeSong-class """
+
+        song = YoutubeSong()
+
+        if "youtube.com/watch?v" in song_query:
+            song_info = downloader.extract_info(song_query, download=False)
+
+            song.name = song_info.get('title')
+            song.stream_url = song_info.get('url')
+            song.is_valid = True
+
+        return song
+        
+    def get_song_from_search(self, downloader, song_query) -> YoutubeSong:
+        """Searches YouTube with ytsearch and returns YoutubeSong-class"""
+
+        query = f"ytsearch:{song_query}"
+        song_info = downloader.extract_info(query, download=False)
+        song = YoutubeSong()
+
+        if song_info['entries']:
+            song.name = song_info['entries'][0]['title']
+            song.stream_url = song_info['entries'][0]['url']
+            song.is_valid = True
+
+        return song
+
+    def get_yt_stream_url(self, song_query: str) -> YoutubeSong:
+        """Returns YoutubeSong-class with name and streamlink to song"""
+        
         downloader = YoutubeDL({'format': 'bestaudio', 'noplaylist':'True'})
-        
+
         if self.is_link(song_query):
-            if "youtube.com/watch?v" in song_query:
-                song_info = downloader.extract_info(song_query, download=False)
-                stream_url = song_info.get("url")
+            song = self.get_song_from_link(downloader, song_query)
         else:
-            query = f"ytsearch:{song_query}"
-            song_info = downloader.extract_info(query, download=False)
-            if song_info['entries']:
-                stream_url = song_info['entries'][0]['url']
-            else:
-                stream_url = None
+            song = self.get_song_from_search(downloader, song_query)
+        return song
 
-        return stream_url
-
-    def add(self, song_query: str) -> None:
+    async def add(self, ctx, song_query: str) -> None:
         """Adds song to queue"""
-
-        song_url = self.get_yt_stream_url(song_query)
+        youtube_song = self.get_yt_stream_url(song_query)
         
-        if song_url is not None:
-            self.song_queue.add(SongNode(song_url))
+        if youtube_song.is_valid:
+            
+            self.song_queue.add(SongNode(youtube_song))
+            title = "You have a terrible taste in music, but it has been added to the queue"
+            await send_message(ctx, title, f"{youtube_song.name}")
 
     def remove(self) -> None:
         """Removes first song from queue"""
 
         self.song_queue.remove_first_song()
 
-    def play(self, voice_client) -> None:
+    async def play(self, ctx) -> None:
         """Plays songs from queue through voice_client"""
-
-        source = PCMVolumeTransformer(FFmpegPCMAudio(self.song_queue.get_song(),
+        
+        while self.song_queue.head:
+        
+            song = self.song_queue.get_song()
+        
+            source = PCMVolumeTransformer(FFmpegPCMAudio(song.stream_url,
                                           **self.FFMPEG_OPTIONS), 1)
-        voice_client.play(source, after=lambda x: self.play_next(voice_client))
+            
+            await send_message(ctx, "Now playing :cake:", song.name)
 
+            ctx.voice_client.play(source)
 
-    def play_next(self, voice_client):
-        """Removes the first song and plays the next song in queue"""
-
-        self.song_queue.remove_first_song()
-        if self.song_queue.head:
-            self.play(voice_client)
+            self.song_queue.remove_first_song()
 
     def clear_queue(self):
         self.song_queue = SongQueue()
