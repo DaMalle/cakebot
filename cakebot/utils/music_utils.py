@@ -9,8 +9,8 @@ from cakebot.utils.general_utils import send_message
 
 @dataclass(init=True)
 class YoutubeSong:
-    name: str | None = None
-    stream_url: str | None = None
+    name: str = None
+    stream_url: str = None
     is_valid: bool = False
 
 
