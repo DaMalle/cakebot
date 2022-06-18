@@ -160,5 +160,15 @@ class MusicPlayer:
 
             self.song_queue.remove_first_song()
 
+    def get_queue(self):
+        node = self.song_queue.head
+        nodes = []
+
+        while node:
+            nodes.append(node.song.name)
+            node = node.next
+
+        return "\n".join(nodes)
+
     def clear_queue(self):
         self.song_queue = SongQueue()
