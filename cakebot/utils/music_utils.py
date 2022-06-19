@@ -95,7 +95,7 @@ class MusicPlayer:
 
         song = YoutubeSong()
 
-        if "youtube.com/watch?v" in song_query:
+        if "youtube.com/watch?v" in song_query or "youtu.be" in song_query:
             song_info = downloader.extract_info(song_query, download=False)
 
             song.name = song_info.get('title')
