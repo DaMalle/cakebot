@@ -4,7 +4,7 @@ attrs==21.4.0
 Brotli==1.0.9
 certifi==2022.6.15
 cffi==1.15.0
-chardet==4.0.0
+chardet==4.0
 charset-normalizer==2.1.0
 Deprecated==1.2.13
 ffmpeg-python==0.2.0
