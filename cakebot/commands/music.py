@@ -1,18 +1,19 @@
 from discord.ext import commands
 
 from cakebot.utils.general_utils import send_message
-from cakebot.utils import music_utils
+from cakebot.utils.music_utils.music_player import MusicPlayer
 from cakebot.commands.general import join
+
 
 class Music(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.music_player = music_utils.MusicPlayer()
-        
+        self.music_player = MusicPlayer()
+
     @commands.command(name='play')
     async def _play(self, ctx, *song_request) -> None:
         await join(ctx)
-        
+
         if ctx.author.voice.channel == ctx.voice_client.channel:
             await self.music_player.add(ctx, ' '.join(song_request))
             if not ctx.voice_client.is_playing():
@@ -34,6 +35,7 @@ class Music(commands.Cog):
     @commands.command(name='clear')
     async def _clear(self, ctx) -> None:
         self.music_player.clear_queue()
+        await send_message(ctx, title="Cleared queue")
 
     @commands.command(name='stop')
     async def _stop(self, ctx) -> None:
@@ -44,6 +46,12 @@ class Music(commands.Cog):
     async def _queue(self, ctx) -> None:
         await send_message(ctx, title="The queue is:",
                            msg=self.music_player.get_queue())
+
+    @commands.command(name='shuffle')
+    async def _shuffle(self, ctx) -> None:
+        self.music_player.shuffle()
+        await send_message(ctx, title="Shuffled queue")
+
 
 def setup(bot):
     bot.add_cog(Music(bot))

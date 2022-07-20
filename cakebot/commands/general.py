@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 from cakebot.utils.general_utils import send_message
 
@@ -17,8 +16,9 @@ async def join(ctx: commands.Context) -> None:
         else:
             await destination.connect()
     else:
-        msg="You are not in a chatroom :cake:"
+        msg = "You are not in a chatroom"
         await send_message(ctx, title="You Are Trash!", msg=msg)
+
 
 @commands.command(name='leave')
 async def leave(ctx: commands.Context) -> None:
@@ -26,17 +26,20 @@ async def leave(ctx: commands.Context) -> None:
 
     try:
         await ctx.voice_client.disconnect()
-    except:
-        await ctx.send(content="I'm not connected :cake:")
+        await send_message(ctx, title="Bye bitch!")
+    except AttributeError:
+        await send_message(ctx, title="I'm not in a chatroom loser...")
+
 
 @commands.command(name='ping')
 async def ping(ctx: commands.Context) -> None:
     """Sends the latency of the discord bot"""
 
-    msg = f"Latency is {round(ctx.bot.latency * 1000)}ms :cake:"
+    msg = f"Latency is {round(ctx.bot.latency * 1000)}ms"
     await send_message(ctx, title="Pong!", msg=msg)
 
+
 def setup(bot) -> None:
-    bot.add_command(join)
-    bot.add_command(leave)
-    bot.add_command(ping)
+    commands = [join, leave, ping]
+    for command in commands:
+        bot.add_command(command)

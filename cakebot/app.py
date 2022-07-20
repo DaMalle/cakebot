@@ -10,13 +10,14 @@ def main() -> None:
     """Starts discord bot with logging in terminal"""
 
     logging.basicConfig(level=logging.INFO)
-    load_dotenv() # Get access to .env
+    load_dotenv()  # Get access to .env
     DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-    
+
     bot = commands.Bot(command_prefix='!')
-    
+
     extensions = ['commands.general', 'commands.music']
-    for extension in extensions: bot.load_extension(extension)
+    for extension in extensions:
+        bot.load_extension(extension)
 
     bot.run(DISCORD_TOKEN)
 
