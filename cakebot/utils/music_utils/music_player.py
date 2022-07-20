@@ -56,14 +56,10 @@ class SpotifyHandler:
         )
         try:
             playlist = result["items"]
-            query_playlist = [f'{track["track"]["album"]["artists"][0]["name"]} {track["track"]["name"]}' for track in playlist]
-            print(query_playlist)
-            return query_playlist
+            return [f'{track["track"]["album"]["artists"][0]["name"]} {track["track"]["name"]}' for track in playlist]
         except KeyError:
             playlist = result["tracks"]["items"]
-            query_playlist = [f'{track["track"]["album"]["artists"][0]["name"]} {track["track"]["name"]}' for track in playlist]
-            print(query_playlist)
-            return query_playlist
+            return [f'{track["track"]["album"]["artists"][0]["name"]} {track["track"]["name"]}' for track in playlist]
     
     def get_album(self, query) -> list[str]:
         """returns artist and title of a album"""
